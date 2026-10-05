@@ -1,0 +1,19 @@
+# Dependencies — reinstalled by Netlify on every build
+node_modules/
+
+# The old Next.js version. Kept locally for reference, but it must never be
+# deployed: `publish = "."` in netlify.toml uploads everything else in the
+# repo root, and this folder is dead source nobody should be served.
+#
+# NOTE: if archive/ was already committed before this file existed, git will
+# keep tracking it. Run this once to stop:
+#     git rm -r --cached archive
+archive/
+
+# OS noise
+Thumbs.db
+.DS_Store
+
+# Editor
+.vscode/
+.idea/

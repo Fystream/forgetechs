@@ -1,0 +1,70 @@
+# =============================================================================
+#  NETLIFY CONFIG — Forge Technologies
+#
+#  This site is plain static HTML. There is no framework, no bundler and no
+#  output folder: the repo root IS the website. index.html sits next to
+#  assets/, and both get served exactly as committed.
+#
+#  The previous config pointed `publish` at "dist" and ran a bundler step that
+#  no longer exists, which is why deploys were failing.
+# =============================================================================
+
+[build]
+  # The repo root. NOT "dist" — nothing here generates one.
+  publish = "."
+
+  # Only Tailwind runs. assets/css/styles.css is already committed, so this is
+  # belt-and-braces: it guarantees the stylesheet matches the HTML even if
+  # someone adds a class and forgets to rebuild locally.
+  #
+  # If you ever want a zero-build deploy, delete this line entirely — the
+  # committed styles.css is complete and the site works without it.
+  command = "npm run build:css"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# -----------------------------------------------------------------------------
+#  CACHING
+#  Filenames here are not content-hashed, so anything cached hard has to be
+#  something that genuinely never changes under the same name.
+# -----------------------------------------------------------------------------
+
+# Webfonts never change once vendored. Safe to cache for a year.
+[[headers]]
+  for = "/assets/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# GSAP is pinned to a specific version by its file contents.
+[[headers]]
+  for = "/assets/vendor/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Images change when the work does — a week is a fair compromise.
+[[headers]]
+  for = "/assets/img/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+# CSS and JS share stable filenames, so they must be revalidated or an edit
+# would never reach anyone who had already visited.
+[[headers]]
+  for = "/assets/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/assets/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Pages are always revalidated, plus baseline security headers.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"

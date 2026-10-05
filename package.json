@@ -1,0 +1,16 @@
+{
+  "name": "forge-tech",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Forge Technologies — static, offline-capable multi-page site. Open index.html directly; no server required.",
+  "scripts": {
+    "build:css": "tailwindcss -i ./assets/css/tailwind.css -o ./assets/css/styles.css --minify",
+    "watch:css": "tailwindcss -i ./assets/css/tailwind.css -o ./assets/css/styles.css --watch",
+    "build": "npm run build:css"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "gsap": "^3.13.0",
+    "tailwindcss": "^4.1.0"
+  }
+}
