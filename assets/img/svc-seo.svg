@@ -1,0 +1,12 @@
+﻿<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#1e3a6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Magnifying glass -->
+  <circle cx="50" cy="50" r="26" stroke-width="2.5"/>
+  <line x1="70" y1="70" x2="92" y2="92" stroke-width="3"/>
+  <!-- Map pin inside the glass -->
+  <path d="M50 38 Q42 38 42 48 Q42 58 50 66 Q58 58 58 48 Q58 38 50 38 Z" fill="#c9b88a" stroke="none"/>
+  <circle cx="50" cy="48" r="3" fill="#fffdf7"/>
+  <!-- Tiny ranking arrow up -->
+  <g transform="translate(82, 30)">
+    <path d="M0 12 L0 0 M-6 6 L0 0 L6 6" stroke-width="2.5"/>
+  </g>
+</svg>

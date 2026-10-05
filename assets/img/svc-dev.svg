@@ -1,0 +1,14 @@
+﻿<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#1e3a6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Window frame -->
+  <rect x="12" y="20" width="96" height="80" rx="6" stroke-width="2.5"/>
+  <line x1="12" y1="34" x2="108" y2="34" stroke-width="1.5"/>
+  <!-- Code brackets -->
+  <path d="M36 56 L26 70 L36 84" stroke-width="2.5"/>
+  <path d="M84 56 L94 70 L84 84" stroke-width="2.5"/>
+  <!-- Slash through middle -->
+  <line x1="68" y1="50" x2="52" y2="90" stroke="#8f7a3e" stroke-width="2.5"/>
+  <!-- Dots in browser bar -->
+  <circle cx="20" cy="27" r="1.5" fill="#1e3a6b"/>
+  <circle cx="26" cy="27" r="1.5" fill="#1e3a6b"/>
+  <circle cx="32" cy="27" r="1.5" fill="#1e3a6b"/>
+</svg>

@@ -1,0 +1,1292 @@
+/* ============================================================================
+ *  SOURCE STYLESHEET  —  compiled to assets/css/styles.css
+ *
+ *  You do NOT link this file from the HTML. Pages link the compiled
+ *  assets/css/styles.css, which is committed and works with zero tooling.
+ *
+ *  Only rebuild if you add new Tailwind utility classes to the HTML:
+ *      npm run build:css      (one-off)
+ *      npm run watch:css      (rebuild while you edit)
+ * ========================================================================== */
+
+/* Vendored @font-face rules. Relative paths resolve from the COMPILED file's
+ * location (assets/css/), which is the same folder — so ../fonts/ is correct. */
+@import "./fonts.css";
+
+/* source(none) disables Tailwind's automatic file discovery so it never
+ * scans archive/ or node_modules. We list the real sources explicitly. */
+@import "tailwindcss" source(none);
+
+@source "../../*.html";
+@source "../js/*.js";
+
+/* ============================================================================
+ *  DESIGN TOKENS
+ *  ---------------------------------------------------------------------------
+ *  LIGHT THEME. Off-white is the ground, midnight navy is the ink.
+ *
+ *  Two names, and they mean what they say:
+ *    paper  → the surface (backgrounds)
+ *    ink    → everything drawn on it (text, rules, marks)
+ *
+ *  Hierarchy comes from OPACITY of the single ink colour, never from grey hex
+ *  values. That's what keeps the whole page feeling like one material rather
+ *  than a pile of unrelated greys.
+ * ========================================================================== */
+@theme {
+  --color-paper: #fdfdfd;
+  --color-paper-dim: #f4f5f7; /* faint panel fill, one step down from paper */
+  --color-ink: #091529;
+
+  /* Measured against the paper ground. WCAG AA wants 4.5:1 for normal text.
+   *   ink-70  0.72 -> 7.29:1   body copy
+   *   ink-45  0.62 -> 5.12:1   secondary copy   (was 0.50, 3.46:1 — failed)
+   *   ink-28  0.58 -> 4.50:1   small mono labels (was 0.34, 2.19:1 — failed badly)
+   *   ink-12 / ink-06 are borders and rules, not text, so they stay as they are.
+   *
+   * ink-28 sits close to ink-45 now, and that is the deliberate trade: on a
+   * near-white ground you cannot have four distinct lightness steps AND have
+   * them all legible. Labels stop being *lighter* than secondary text and start
+   * being *different* — the mono face, the caps and the 0.22em tracking already
+   * carry that distinction. Do not lighten these back without re-measuring. */
+  --color-ink-70: rgb(9 21 41 / 0.72);
+  --color-ink-45: rgb(9 21 41 / 0.62);
+  --color-ink-28: rgb(9 21 41 / 0.58);
+  --color-ink-12: rgb(9 21 41 / 0.16);
+  --color-ink-06: rgb(9 21 41 / 0.09);
+
+  /* --- A PINCH OF GOLD ---------------------------------------------------
+   * Muted antique gold, not brass. Used ONLY on tiny elements: the live dot,
+   * section markers, index numerals, the icon chips on the floating cards.
+   * Never on body text, never as a fill larger than a coin.
+   *
+   * The restraint is the point — the moment gold appears on a heading or a
+   * button it stops reading as expensive and starts reading as a discount
+   * furniture advert. If you want more of it, raise the OPACITY of the soft
+   * tints below rather than adding new places it appears. */
+  --color-gold: #a8873c;
+  --color-gold-soft: rgb(168 135 60 / 0.13);
+  --color-gold-line: rgb(168 135 60 / 0.34);
+
+  /* --- GOLD, BUT FOR LETTERING -------------------------------------------
+   * #a8873c is 3.33:1 on paper — fine for a 5px dot, not for an 11px word.
+   * This darker gold is for TEXT on the paper ground only: `.label` and
+   * `.pill`. 5.60:1 on paper, 4.92:1 on the gold-soft pill ground.
+   *
+   * It is NOT a replacement for --color-gold, and must never be used for:
+   *   - dots (.marker::before, .pill b, .marquee-item::after, the live dot)
+   *   - numerals (.num-xl, .rail-dot)
+   *   - tick marks (.ticks li::before) and hairline rules (--color-gold-line)
+   *   - ANY gold on the navy surfaces (.panel-ink, .curtain, .mobile-nav)
+   * On navy, #a8873c already measures 5.38:1 and darkening it would BREAK it,
+   * dropping it to 3.20:1. There is an unlayered guard at the end of this file
+   * that enforces that last rule whatever the markup says. */
+  --color-gold-ink: #7d6327;
+
+  /* --- Type stack (vendored woff2, see fonts.css) --- */
+  --font-sans: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Instrument Serif", ui-serif, Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+
+  /* Built-in CSS easings are too weak to read as intentional. These are the
+   * strong variants: --ease-out for anything entering or responding to the
+   * user, --ease-in-out for things travelling across the screen.
+   * `ease-in` is deliberately absent - it delays the first frame, which is
+   * the exact moment the user is watching, and makes UI feel sluggish. */
+  --ease-signature: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+/* ============================================================================
+ *  BASE
+ * ========================================================================== */
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  /* The site uses the system cursor. A custom ring-and-dot cursor that hid it
+   * was removed in October 2026: the ring was designed to trail the pointer,
+   * and the system cursor never lags. Do not hide `cursor` again. */
+
+  /* Keyboard users must always get a visible focus ring. Non-negotiable. */
+  :focus-visible {
+    outline: 1px solid var(--color-ink);
+    outline-offset: 4px;
+  }
+
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: var(--color-paper); }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(9 21 41 / 0.18);
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: rgb(9 21 41 / 0.34); }
+}
+
+/* ============================================================================
+ *  PRE-ANIMATION STATE  —  gated behind .js
+ *  These rules hide elements before GSAP takes over. They apply ONLY when the
+ *  inline <script> in <head> has added .js to <html>, so a visitor with
+ *  JavaScript disabled still sees a complete, readable page.
+ * ========================================================================== */
+@layer base {
+  .curtain { display: none; }
+  .js .curtain { display: flex; }
+
+  .js [data-anim]:not([data-anim="curtain"]) { opacity: 0; }
+  .js [data-split] { visibility: hidden; }
+  .js [data-reveal] { opacity: 0; }
+
+  /* The hero build: the screenshot starts fully clipped away and the wireframe
+   * skeleton sits where it will land. Both states exist ONLY under .js, so
+   * without JavaScript — or after the 3-second failsafe strips .js — the frame
+   * just shows the live site. */
+  .js .build-shot { clip-path: inset(0 0 100% 0); }
+
+  /* Agency prices are struck through by a line that draws itself in. Its
+   * resting state, with no JS, is fully drawn. */
+  .js .strike { --strike: 0; }
+}
+
+/* ============================================================================
+ *  COMPONENTS
+ * ========================================================================== */
+@layer components {
+  /* A #webgl host rule used to sit here. WebGL was removed deliberately (see
+   * README) and no page has had that element since. */
+
+  /* --- Curtain ----------------------------------------------------------- */
+  .curtain {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    align-items: flex-end;
+    justify-content: space-between;
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+    padding: 0 1.5rem 2rem;
+  }
+  @media (min-width: 768px) {
+    .curtain { padding: 0 2.5rem 2rem; }
+  }
+  /* The curtain is the one INVERTED surface on the site — navy ground, paper
+   * text. Its labels carry ink utilities from the markup, so override them
+   * here rather than special-casing six HTML files. */
+  .curtain .label { color: rgb(253 253 253 / 0.45); }
+
+  /* --- FAQ accordion ------------------------------------------------------
+   * Height is animated by GSAP, not CSS, so the panel starts closed and JS
+   * owns everything after that.
+   *
+   * GATED BEHIND .js, and that is not optional. Ungated, `height: 0` hid all
+   * eleven answers from anyone whose JavaScript failed or was blocked — on the
+   * pricing page, with a FAQPage schema promising Google answers that were not
+   * in the rendered document. Without JS the answers are simply open prose. */
+  .js .faq-panel {
+    overflow: hidden;
+    height: 0;
+  }
+  /* The +/− control is a lie without the script that drives it, so it only
+   * exists once that script is present. */
+  .faq-sign {
+    display: none;
+    position: relative;
+    flex-shrink: 0;
+    width: 12px;
+    height: 12px;
+  }
+  .js .faq-sign { display: block; }
+  .faq-sign::before,
+  .faq-sign::after {
+    content: "";
+    position: absolute;
+    background-color: currentColor;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .faq-sign::before { top: 5px; left: 0; width: 12px; height: 1px; }
+  .faq-sign::after { top: 0; left: 5px; width: 1px; height: 12px; }
+  /* The vertical stroke rotates away, turning + into − */
+  [aria-expanded="true"] .faq-sign::after { transform: rotate(90deg); }
+
+  /* The .cursor-root / .cursor-ring / .cursor-dot styles for the custom
+   * cursor used to sit here. Removed with cursor.js. */
+
+  /* ========================================================================
+   *  LIQUID GLASS — REMOVED
+   *  ---------------------------------------------------------------------
+   *  A .glass / .glass-dark pair used to live here: blur plus saturation, a
+   *  top-down sheen pseudo-element, a specular 1px rim via a content-box/exclude
+   *  mask, and a solid fallback for browsers without backdrop-filter. About 100
+   *  lines, and no page ever used either class.
+   *
+   *  The three surfaces on this site that genuinely are glass each carry their
+   *  own rules, because each sits over something with content behind it:
+   *      1. .site-header.is-stuck  (the page scrolls underneath it)
+   *      2. .float-card            (they sit on the hero screenshot)
+   *      3. the WhatsApp button    (it floats over the page)
+   *
+   *  Keep the principle even though the code is gone: glass is only visible
+   *  over CONTENT. On the flat #fdfdfd ground backdrop-filter costs GPU time
+   *  and shows nothing, so do not add it to the panels.
+   * ====================================================================== */
+
+  /* ---------------------------------------------------------------------
+   *  FIXED HEADER
+   *  Transparent at the top of the page, then frosts once you scroll -
+   *  site.js adds .is-stuck. Glass on a header that never moves is just a
+   *  grey bar; the transition is what sells it.
+   * ------------------------------------------------------------------- */
+  .site-header {
+    position: fixed;
+    inset-inline: 0;
+    top: 0;
+    z-index: 50;
+    transition:
+      background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+      backdrop-filter 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    background-color: transparent;
+    border-bottom: 1px solid transparent;
+  }
+  .site-header.is-stuck {
+    background-color: rgb(253 253 253 / 0.66);
+    -webkit-backdrop-filter: blur(22px) saturate(190%);
+    backdrop-filter: blur(22px) saturate(190%);
+    border-bottom-color: rgb(9 21 41 / 0.07);
+    box-shadow: 0 6px 26px -14px rgb(9 21 41 / 0.28);
+  }
+
+  /* ========================================================================
+   *  MOBILE NAVIGATION
+   *  ---------------------------------------------------------------------
+   *  Below md there was no navigation at all - the links were simply hidden
+   *  and nothing took their place.
+   *
+   *  Fallback order matters here. Without JavaScript the burger cannot open
+   *  anything, so the plain links stay visible and wrap; only once .js is on
+   *  <html> do they hide and hand over to the burger. A visitor never ends up
+   *  with no way to move around the site.
+   * ====================================================================== */
+
+  /* Desktop link row. Visible by default so no-JS mobile still navigates. */
+  .nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.1rem;
+  }
+  .js .nav-links { display: none; }
+  @media (min-width: 768px) {
+    .nav-links,
+    .js .nav-links { display: flex; flex-wrap: nowrap; gap: 2.25rem; }
+  }
+
+  /* The header CTA duplicates into the panel, so it steps aside on mobile
+     rather than crowding the burger. */
+  .nav-cta { display: none; }
+  @media (min-width: 768px) { .nav-cta { display: block; } }
+
+  /* --- Burger ------------------------------------------------------------
+   * 44px box: the minimum comfortable touch target, even though the bars
+   * inside are only 22px wide. */
+  .burger {
+    position: relative;
+    display: none;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin-right: -0.6rem;
+    z-index: 80; /* above the panel, so it can also close it */
+    color: var(--color-ink);
+  }
+  .js .burger { display: grid; }
+  @media (min-width: 768px) { .js .burger { display: none; } }
+
+  .burger span {
+    position: absolute;
+    width: 22px;
+    height: 1.5px;
+    border-radius: 2px;
+    background-color: currentColor;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .burger span:nth-child(1) { transform: translateY(-4px); }
+  .burger span:nth-child(2) { transform: translateY(4px); }
+  /* Two bars, not three: they cross into an X with no third bar to fade out,
+     which makes the transition cleaner. */
+  .burger[aria-expanded="true"] span:nth-child(1) { transform: rotate(45deg); }
+  .burger[aria-expanded="true"] span:nth-child(2) { transform: rotate(-45deg); }
+  /* Once the navy panel is behind it the icon has to invert. */
+  body.nav-open .burger { color: var(--color-paper); }
+
+  /* --- Panel -------------------------------------------------------------
+   * Below the curtain (z-90) so page transitions still cover it, above the
+   * header (z-50) so it owns the screen while open. */
+  .mobile-nav {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    display: flex;
+    flex-direction: column;
+    /* `justify-content: center` was here, which is the classic trap: combined
+     * with overflow-y it centres the content and then makes anything taller
+     * than the panel unreachable ABOVE the scroll origin — the first two links
+     * simply cannot be scrolled to. `margin-block: auto` on the children
+     * centres identically when there is room and degrades to normal top-anchored
+     * scrolling when there isn't. Six links and a short phone in landscape is
+     * exactly the case that overflowed. */
+    padding: 6rem 1.5rem 2.5rem;
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .mobile-nav > * { flex-shrink: 0; }
+  .mobile-nav > :first-child { margin-top: auto; }
+  .mobile-nav > :last-child { margin-bottom: auto; }
+  .mobile-nav[hidden] { display: none; }
+
+  .mobile-nav a { display: block; }
+  .mobile-nav .m-link {
+    font-size: clamp(2rem, 11vw, 3rem);
+    font-weight: 500;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+    padding: 0.35rem 0;
+    color: var(--color-paper);
+  }
+  .mobile-nav .m-link[aria-current="page"] { color: var(--color-gold); }
+  .mobile-nav .m-index {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: rgb(253 253 253 / 0.3);
+    margin-right: 0.9rem;
+  }
+  .mobile-nav .m-rule { height: 1px; background-color: rgb(253 253 253 / 0.1); }
+
+  /* Body lock while the panel is open, otherwise the page scrolls underneath. */
+  body.nav-open { overflow: hidden; }
+
+  /* ========================================================================
+   *  IMAGERY
+   * ====================================================================== */
+
+  /* --- Screenshot frame ---------------------------------------------------
+   * A browser-window feel without drawing a fake chrome bar: hairline border,
+   * generous radius, and a two-stage shadow (one wide and soft for the lift,
+   * one tight and dark for the contact edge). The tight shadow is what stops
+   * it looking like a sticker. */
+  .shot {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    border: 1px solid var(--color-ink-12);
+    background-color: var(--color-paper);
+    box-shadow:
+      0 40px 80px -32px rgb(9 21 41 / 0.30),
+      0 12px 26px -12px rgb(9 21 41 / 0.14);
+  }
+  .shot img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+  }
+  /* Slow zoom on hover. transform only, so it never causes layout work. */
+  .shot-zoom img {
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .group:hover .shot-zoom img { transform: scale(1.04); }
+
+  /* --- Browser frame (homepage hero) --------------------------------------
+   * Wraps the hero screenshot in a drawn address bar. Pure paper and ink: the
+   * only gold is the Live dot, which is a dot, so it keeps #a8873c. */
+  .browser { display: flex; flex-direction: column; }
+  .browser-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.55rem 0.8rem;
+    border-bottom: 1px solid var(--color-ink-06);
+    background-color: var(--color-paper-dim);
+  }
+  .browser-dots { display: flex; gap: 5px; flex-shrink: 0; }
+  .browser-dots i {
+    width: 8px; height: 8px; border-radius: 999px;
+    background-color: var(--color-ink-12);
+  }
+  .browser-url {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.28rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-ink-06);
+    background-color: var(--color-paper);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--color-ink-70);
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .browser-url svg { width: 11px; height: 11px; flex-shrink: 0; color: var(--color-ink-45); }
+  /* A caret that blinks only while the address is being typed. */
+  .browser-url-text::after {
+    content: "";
+    display: inline-block;
+    width: 1px;
+    height: 1em;
+    margin-left: 1px;
+    vertical-align: -2px;
+    background-color: currentColor;
+    opacity: 0;
+  }
+  .browser-url-text.is-typing::after { animation: caret 0.8s steps(1) infinite; }
+  @keyframes caret { 0% { opacity: 1; } 50% { opacity: 0; } }
+
+  .browser-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-gold-ink);
+  }
+  .browser-live b {
+    width: 6px; height: 6px; border-radius: 999px;
+    background-color: var(--color-gold);
+    animation: live-pulse 2.4s var(--ease-out) infinite;
+  }
+  @keyframes live-pulse {
+    0%        { box-shadow: 0 0 0 0 rgb(168 135 60 / 0.45); }
+    70%, 100% { box-shadow: 0 0 0 6px rgb(168 135 60 / 0); }
+  }
+  @media (max-width: 380px) { .browser-live { display: none; } }
+
+  .browser-view {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    max-width: 100%;
+    overflow: hidden;
+    background-color: var(--color-paper);
+  }
+  /* The real screenshot sits ABOVE the skeleton, so wiping its clip downward
+   * reads as the finished page arriving over the wireframe. */
+  .browser-view .build-shot { position: absolute; inset: 0; z-index: 2; }
+
+  /* --- Wireframe skeleton --------------------------------------------------
+   * Shaped after the Omega Dental hero it is about to become: nav strip, two
+   * headline bars, two lines of copy, a button, a photo block. ink-06 so it
+   * reads as pencil, not as content. Only ever exists under .js. */
+  .build-skeleton { display: none; }
+  .js .build-skeleton {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .sk {
+    position: absolute;
+    display: block;
+    border-radius: 6px;
+    background-color: var(--color-ink-06);
+    transform-origin: left center;
+  }
+  .sk-nav  { top: 5%;  left: 5%; right: 5%; height: 4%; border-radius: 4px; }
+  .sk-h1   { top: 22%; left: 6%; width: 38%; height: 7%; }
+  .sk-h1-b { top: 31.5%; width: 29%; }
+  .sk-p    { top: 45%; left: 6%; width: 34%; height: 2.6%; border-radius: 3px; }
+  .sk-p-b  { top: 50%; width: 27%; }
+  .sk-btn  { top: 59%; left: 6%; width: 15%; height: 6.5%; border-radius: 999px; background-color: var(--color-gold-soft); }
+  .sk-img  { top: 20%; right: 6%; width: 36%; height: 52%; border-radius: 12px; transform-origin: center bottom; }
+
+  /* --- Rotating headline word ---------------------------------------------
+   * All words share one grid cell, so the box is always as wide as the widest
+   * and the headline line never reflows as they swap. overflow is the mask the
+   * words slide through; the padding/negative-margin pair gives descenders
+   * (homestay, shop) room inside it without changing the line box. */
+  .rotator {
+    display: inline-grid;
+    vertical-align: baseline;
+    overflow: hidden;
+    padding-block: 0.12em;
+    margin-block: -0.12em;
+  }
+  .rotator-word { grid-area: 1 / 1; }
+  .rotator-word:not(.is-on) { visibility: hidden; }
+
+  /* --- Animated strike-through --------------------------------------------
+   * Replaces text-decoration: line-through on the agency prices. A pseudo-
+   * element rather than a child span, because the currency toggle rewrites
+   * these elements' textContent and would wipe out any child. Its length is a
+   * custom property GSAP can tween; resting value 1 = fully drawn. */
+  .strike {
+    --strike: 1;
+    position: relative;
+    display: inline-block;
+  }
+  .strike::after {
+    content: "";
+    position: absolute;
+    left: -2%;
+    right: -2%;
+    top: 54%;
+    height: max(1.5px, 0.06em);
+    border-radius: 1px;
+    background-color: currentColor;
+    transform: scaleX(var(--strike));
+    transform-origin: left center;
+    pointer-events: none;
+  }
+
+  /* --- Floating info card -------------------------------------------------
+   * The device Falah already uses on both client sites: a small white card
+   * overlapping the corner of the hero image. Pulls the eye across the image
+   * and turns a flat screenshot into a composition. */
+  .float-card {
+    position: absolute;
+    z-index: 2;
+    isolation: isolate;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.72rem 1rem;
+    border-radius: 14px;
+    white-space: nowrap;
+
+    /* Glass, because these sit directly on the hero screenshot - there is a
+     * real image behind them to blur and saturate. This is the one place on
+     * the page where the effect is unmistakable. */
+    background-color: rgb(253 253 253 / 0.66);
+    -webkit-backdrop-filter: blur(18px) saturate(190%);
+    backdrop-filter: blur(18px) saturate(190%);
+    border: 1px solid rgb(255 255 255 / 0.55);
+    box-shadow:
+      0 20px 44px -16px rgb(9 21 41 / 0.30),
+      0 3px 10px -3px rgb(9 21 41 / 0.10);
+  }
+  .float-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.6), rgb(255 255 255 / 0) 55%);
+    pointer-events: none;
+  }
+  /* Specular rim, warmed with a trace of gold at the far corner. */
+  .float-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      rgb(255 255 255 / 1) 0%,
+      rgb(255 255 255 / 0.3) 32%,
+      rgb(255 255 255 / 0) 58%,
+      rgb(168 135 60 / 0.35) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .float-card { background-color: rgb(253 253 253 / 0.97); }
+  }
+  .float-card-ico {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background-color: var(--color-gold-soft);
+    color: var(--color-gold);
+  }
+  .float-card-ico svg { width: 15px; height: 15px; }
+
+  /* --- Service icons ------------------------------------------------------
+   * The SVGs ship stroked in #1e3a6b. Close to our ink but not identical, so
+   * a slight desaturation pulls them into the palette. */
+  .svc-ico {
+    width: 46px;
+    height: 46px;
+    filter: saturate(0.8);
+  }
+
+  /* --- Client logo chip --------------------------------------------------- */
+  .client-logo {
+    height: 26px;
+    width: auto;
+    opacity: 0.5;
+    filter: grayscale(1);
+    transition: opacity 0.3s, filter 0.3s;
+  }
+  .group:hover .client-logo { opacity: 0.85; filter: grayscale(0); }
+
+  /* --- Gold accents (the pinch) ------------------------------------------
+   * `bg-gold` / `text-gold` / `border-gold` come free from the @theme token,
+   * so they are NOT redefined here. Only the marker below needs real CSS.
+   *
+   * Small gold dot before a section label. Used on every section eyebrow so
+   * the page has one repeating accent instead of gold scattered at random. */
+  .marker::before {
+    content: "";
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    margin-right: 0.85em;
+    border-radius: 999px;
+    background-color: var(--color-gold);
+    vertical-align: middle;
+    transform: translateY(-1px);
+  }
+
+  /* ========================================================================
+   *  PAGE FURNITURE
+   *  The pieces that stop every inner page looking like the same column of
+   *  text. Each one is a different shape, so pages read as a sequence rather
+   *  than a template repeated five times.
+   * ====================================================================== */
+
+  /* --- Panel: a raised card on a faintly tinted ground -------------------- */
+  .panel {
+    position: relative; /* anchors .glow-edge */
+    border: 1px solid var(--color-ink-06);
+    border-radius: 18px;
+    background-color: var(--color-paper-dim);
+    padding: 2rem;
+  }
+  @media (min-width: 768px) { .panel { padding: 2.5rem; } }
+
+  .panel-ink {
+    border: 1px solid transparent;
+    border-radius: 18px;
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+    padding: 2.25rem;
+  }
+  @media (min-width: 768px) { .panel-ink { padding: 3rem; } }
+  .panel-ink .label { color: rgb(253 253 253 / 0.5); }
+
+  /* --- Oversized numeral -------------------------------------------------
+   * A big gold figure set behind/beside content. Does more for perceived
+   * production value than any amount of extra copy. */
+  .num-xl {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: clamp(3.5rem, 8vw, 6.5rem);
+    line-height: 0.8;
+    color: var(--color-gold);
+    opacity: 0.28;
+    user-select: none;
+  }
+
+  /* --- Process rail: numbered steps joined by a vertical line ------------- */
+  .rail { position: relative; }
+  .rail::before {
+    content: "";
+    position: absolute;
+    left: 15px;
+    top: 12px;
+    bottom: 12px;
+    width: 1px;
+    background: linear-gradient(
+      to bottom,
+      var(--color-gold-line) 0%,
+      var(--color-ink-12) 55%,
+      transparent 100%
+    );
+  }
+  /* Scroll beam. Injected by site.js, so without JS (or with reduced motion)
+   * the rail is exactly the static gradient line above. Scaled rather than
+   * resized, so filling it is compositor work only. */
+  .rail-beam {
+    position: absolute;
+    left: 15px;
+    top: 12px;
+    bottom: 12px;
+    width: 1px;
+    transform-origin: top;
+    transform: scaleY(0);
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      var(--color-gold-line) 0%,
+      var(--color-gold) 100%
+    );
+  }
+  .rail-step { position: relative; padding-left: 3.25rem; }
+  .rail-dot {
+    position: absolute;
+    left: 0;
+    top: 2px;
+    display: grid;
+    place-items: center;
+    width: 31px;
+    height: 31px;
+    border-radius: 999px;
+    border: 1px solid var(--color-gold-line);
+    background-color: var(--color-paper);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: var(--color-gold);
+    transition:
+      background-color 0.35s var(--ease-out),
+      border-color 0.35s var(--ease-out),
+      box-shadow 0.35s var(--ease-out);
+  }
+  /* The beam has reached this step. Tint, not fill - the dot stays coin-sized
+   * gold, never a solid gold disc. */
+  .rail-step.is-reached .rail-dot {
+    border-color: var(--color-gold);
+    background-color: var(--color-gold-soft);
+    box-shadow: 0 0 0 4px var(--color-paper), 0 0 0 5px var(--color-gold-line);
+  }
+
+  /* --- Gold tick list ----------------------------------------------------- */
+  .ticks { display: flex; flex-direction: column; gap: 0.85rem; }
+  .ticks li {
+    position: relative;
+    padding-left: 1.9rem;
+    line-height: 1.55;
+  }
+  .ticks li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.42em;
+    width: 11px;
+    height: 6px;
+    border-left: 1.5px solid var(--color-gold);
+    border-bottom: 1.5px solid var(--color-gold);
+    transform: rotate(-45deg);
+  }
+
+  /* --- Pill badge --------------------------------------------------------- */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-gold-line);
+    background-color: var(--color-gold-soft);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    /* The lettering takes the darker gold; the dot below keeps the real one. */
+    color: var(--color-gold-ink);
+  }
+  .pill b {
+    width: 5px; height: 5px; border-radius: 999px;
+    background-color: var(--color-gold); flex-shrink: 0;
+  }
+
+  /* --- Marquee: pure-CSS ticker, no JS, no layout work -------------------- */
+  .marquee {
+    display: flex;
+    overflow: hidden;
+    user-select: none;
+    gap: 0;
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .marquee-track {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 3rem;
+    padding-right: 3rem;
+    animation: marquee 34s linear infinite;
+  }
+  .marquee:hover .marquee-track { animation-play-state: paused; }
+  @keyframes marquee { to { transform: translateX(-100%); } }
+  .marquee-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 3rem;
+    white-space: nowrap;
+    font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+    letter-spacing: -0.02em;
+    color: var(--color-ink-45);
+  }
+  .marquee-item::after {
+    content: "";
+    width: 5px; height: 5px; border-radius: 999px;
+    background-color: var(--color-gold);
+    flex-shrink: 0;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track { animation: none; }
+  }
+
+  /* ========================================================================
+   *  PRICING TIERS
+   *  Three options rather than one. The middle tier is the target: given a
+   *  cheap / mid / expensive set, buyers disproportionately choose the middle
+   *  because it feels like the safe compromise. A single price gives them
+   *  nothing to compare against except their own doubt.
+   *
+   *  `.tier-featured` is deliberately the SECOND card, not the most
+   *  expensive - it is the one being steered toward.
+   * ====================================================================== */
+  .tier {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-ink-06);
+    border-radius: 18px;
+    background-color: var(--color-paper-dim);
+    padding: 2rem 1.75rem;
+  }
+  .tier-featured {
+    border-color: var(--color-gold-line);
+    background-color: var(--color-paper);
+    box-shadow:
+      0 24px 60px -24px rgb(9 21 41 / 0.22),
+      0 0 0 1px var(--color-gold-line);
+  }
+
+  /* Hover lift. Uses the individual `translate` property, NOT `transform`:
+   * the scroll reveal leaves an inline transform on every tier, and an inline
+   * style beats any :hover rule, so a transform lift would silently never
+   * happen. `translate` composes with it instead. Pointer devices only — on
+   * touch, hover sticks after a tap — and no movement at all under reduced
+   * motion. The gold edge glow that follows the cursor is added in site.js. */
+  @media (hover: hover) and (pointer: fine) {
+    .tier { transition: translate 0.28s var(--ease-out), box-shadow 0.28s var(--ease-out); }
+    .tier:hover { translate: 0 -4px; }
+    .tier:not(.tier-featured):hover { box-shadow: 0 18px 44px -26px rgb(9 21 41 / 0.2); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tier:hover { translate: none; }
+  }
+  .tier-badge {
+    position: absolute;
+    top: -0.7rem;
+    left: 1.75rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .tier-price {
+    font-size: clamp(2.2rem, 4vw, 3rem);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.045em;
+  }
+  /* A .tier-was struck-through anchor price used to sit here. It was removed
+     along with the invented "agency rate" figure on the Business tier: a
+     strikethrough beside your own price reads as a former price, which is the
+     fake-was pattern that is unlawful in India, the EU and the US. The honest
+     anchor is the agency range in the hero panel, which needs no strikethrough. */
+
+  /* --- Currency toggle -----------------------------------------------------
+   * Two real markets, two real price levels. A Kerala clinic and a US studio
+   * are not the same buyer and pretending one number fits both loses one of
+   * them. INR is the default because it is the primary market - the first
+   * number a visitor sees should be the one that makes sense to them. */
+  .cur-toggle {
+    display: inline-flex;
+    padding: 3px;
+    border-radius: 999px;
+    border: 1px solid var(--color-ink-12);
+    background-color: var(--color-paper-dim);
+  }
+  .cur-btn {
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ink-45);
+    transition:
+      background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+      color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .cur-btn[aria-pressed="true"] {
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  /* --- Guarantee band ------------------------------------------------------
+   * Risk reversal. Price raises perceived risk; an explicit, specific promise
+   * lowers it again. Vague reassurance does nothing - the terms have to be
+   * concrete enough to hold someone to. */
+  .guarantee {
+    border: 1px solid var(--color-gold-line);
+    border-radius: 18px;
+    background-color: var(--color-gold-soft);
+    padding: 2rem;
+  }
+  @media (min-width: 768px) { .guarantee { padding: 2.5rem 3rem; } }
+
+  /* A .cmp comparison-table component used to sit here, unused by every page. */
+
+  /* ========================================================================
+   *  PRESS FEEDBACK
+   *  ---------------------------------------------------------------------
+   *  Nothing on this site acknowledged a press. A pressable element that does
+   *  not move under the finger reads as broken on touch, where there is no
+   *  hover state to fall back on.
+   *
+   *  Only elements GSAP does NOT own are handled here. Magnetic buttons have
+   *  an inline transform written by GSAP every frame, which beats any CSS
+   *  rule, so their press state lives in magnetic.js instead.
+   *
+   *  Scale is kept subtle and inversely proportional to size: a small icon
+   *  can take 0.92, a full-width row would look broken at anything below
+   *  ~0.99, so wide rows shift opacity rather than scale.
+   * ====================================================================== */
+  .cur-btn,
+  .burger,
+  .m-cta,
+  .m-link,
+  .tier a {
+    transition: transform 160ms var(--ease-out), opacity 160ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent; /* kill the grey flash on iOS */
+    touch-action: manipulation;               /* remove the 300ms tap delay */
+  }
+  .cur-btn:active { transform: scale(0.96); }
+  .burger:active  { transform: scale(0.9); }
+  .m-cta:active   { transform: scale(0.97); }
+  .m-link:active  { transform: scale(0.98); }
+  .tier a:active  { transform: scale(0.97); }
+
+  /* Full-width rows: scaling one looks like a rendering fault, so the press
+     reads as a dim instead.
+     Descendant, not child: each button is now wrapped in an h3 so the eleven
+     questions appear in the document outline. */
+  .faq-item button {
+    transition: opacity 140ms var(--ease-out), color 400ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .faq-item button:active { opacity: 0.55; }
+
+  /* Hand-written hover rules are not covered by Tailwind's automatic
+     `@media (hover: hover)` gate, so they need it explicitly - otherwise a
+     tap on a touch screen leaves them stuck in the hover state. */
+  @media (hover: hover) and (pointer: fine) {
+    .group:hover .shot-zoom img { transform: scale(1.04); }
+    .group:hover .client-logo { opacity: 0.85; filter: grayscale(0); }
+  }
+
+  /* ========================================================================
+   *  TOAST
+   *  Confirms a copy-to-clipboard. Enters from below, exits the same way, so
+   *  the motion reads as one object rather than two.
+   * ====================================================================== */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 1.75rem;
+    z-index: 96;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 1.15rem;
+    border-radius: 999px;
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+    font-size: 13px;
+    white-space: nowrap;
+    box-shadow: 0 18px 40px -14px rgb(9 21 41 / 0.5);
+    pointer-events: none;
+  }
+  .toast b {
+    width: 5px; height: 5px; border-radius: 999px;
+    background-color: var(--color-gold); flex-shrink: 0;
+  }
+
+  /* ========================================================================
+   *  FLOURISHES
+   *  Three effects that carry the "this person can build" message harder than
+   *  any sentence on the page. All three are transform-only, all three switch
+   *  off entirely for reduced-motion and coarse pointers.
+   * ====================================================================== */
+
+  /* --- 3D tilt on the hero screenshot ------------------------------------
+   * Perspective must sit on the PARENT, not the tilting element, or every
+   * card gets its own vanishing point and the depth reads as wrong. */
+  .tilt-stage { perspective: 1000px; }
+  .tilt-stage > .shot {
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+  /* A soft highlight that slides across the glass as the card turns. This is
+   * what sells it as a physical object rather than a rotated rectangle. */
+  .tilt-sheen {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 35%,
+      rgb(255 255 255 / 0.55) 50%,
+      transparent 65%
+    );
+    transition: opacity 0.3s var(--ease-out);
+  }
+  .tilt-stage:hover .tilt-sheen { opacity: 1; }
+
+  /* --- Cursor spotlight inside the dark panels ---------------------------
+   * A moved element rather than a CSS variable on purpose: changing a custom
+   * property on a parent recalculates styles for every child, whereas moving
+   * a positioned div is pure compositor work. */
+  .panel-ink { position: relative; overflow: hidden; isolation: isolate; }
+  .spotlight {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    width: 420px;
+    height: 420px;
+    margin: -210px 0 0 -210px;
+    border-radius: 999px;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(
+      circle,
+      rgb(168 135 60 / 0.30) 0%,
+      rgb(168 135 60 / 0.10) 40%,
+      transparent 70%
+    );
+    transition: opacity 0.3s var(--ease-out);
+    will-change: transform;
+  }
+  .panel-ink:hover .spotlight { opacity: 1; }
+
+  /* --- Marquee reacting to scroll ----------------------------------------
+   * Skew applies to the wrapper because the track's transform is already
+   * owned by the scrolling animation. */
+  .marquee { transition: transform 0.25s var(--ease-out); }
+
+  /* --- Glowing edge on light panels --------------------------------------
+   * After Aceternity's "Glowing Effect" (21st.dev), re-cut for this palette:
+   * one gold arc instead of a rainbow, 1px instead of 3.
+   *
+   * A conic gradient paints the arc; the same content-box/exclude mask as
+   * .glass::after clips it to the border band. site.js writes --start (the
+   * pointer's angle) on THIS span, which has no children, so the style
+   * recalculation stays on one element rather than the whole card. */
+  .glow-edge {
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    pointer-events: none;
+    opacity: 0;
+    background: conic-gradient(
+      from calc((var(--start, 0) - var(--spread, 34)) * 1deg),
+      transparent 0deg,
+      var(--color-gold) calc(var(--spread, 34) * 1deg),
+      transparent calc(var(--spread, 34) * 2deg)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    transition: opacity 0.3s var(--ease-out);
+  }
+  .glow-edge.is-lit { opacity: 1; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tilt-sheen,
+    .spotlight,
+    .glow-edge,
+    .rail-beam { display: none; }
+  }
+
+  /* ========================================================================
+   *  FOOTER
+   *  After the large-wordmark footers on 21st.dev: a sitemap and contact
+   *  block, then the brand set huge and fading into the page edge. It
+   *  gives the site a real ending instead of stopping at a copyright line,
+   *  and every page now links to every other page from the bottom.
+   * ====================================================================== */
+  .foot-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    /* A 14px line on its own is a ~20px tap target. The padding takes it to
+     * ~28px without changing where the text sits, because the surrounding
+     * flex gap absorbs it. */
+    padding-block: 0.3rem;
+    color: var(--color-ink-70);
+    transition: color 0.3s var(--ease-out);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .foot-link:hover { color: var(--color-ink); }
+  }
+  .foot-link[aria-current="page"] { color: var(--color-ink); }
+  .foot-link[aria-current="page"]::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 999px;
+    background-color: var(--color-gold);
+  }
+
+  /* The wordmark. Ink fading to paper through background-clip, so it reads as
+   * pressed into the page rather than printed on it. Clipped at the bottom by
+   * its own box on purpose - the page runs out before the letters do. */
+  .foot-mark {
+    display: block;
+    overflow: hidden;
+    height: 0.74em;
+    margin-top: 4rem;
+    font-size: clamp(4.5rem, 21vw, 19rem);
+    font-weight: 500;
+    line-height: 0.9;
+    letter-spacing: -0.065em;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .foot-mark span {
+    display: block;
+    background-image: linear-gradient(
+      to bottom,
+      var(--color-ink-12) 0%,
+      rgb(9 21 41 / 0.02) 85%
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+  .foot-mark em {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    letter-spacing: -0.03em;
+  }
+
+  /* --- Magnetic wrapper (classes applied by magnetic.js) ------------------ */
+  .mag-root { will-change: transform; }
+  /* magnetic.js moves the element's contents into this wrapper so the label
+   * can drift further than its container. `inherit` on alignment and gap
+   * means wrapping is invisible to layout — the logo keeps its baseline
+   * alignment, buttons keep their centred icon spacing. */
+  .mag-label {
+    display: inline-flex;
+    align-items: inherit;
+    gap: inherit;
+    will-change: transform;
+  }
+}
+
+/* ============================================================================
+ *  UTILITIES
+ * ========================================================================== */
+@utility label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+/* Gradient wash for the emphasised headline word. On a light ground it dips
+ * toward a softer navy mid-word, so the text catches light like letterpress
+ * rather than flattening out. */
+@utility text-sheen {
+  background-image: linear-gradient(
+    100deg,
+    rgb(9 21 41 / 1) 0%,
+    rgb(9 21 41 / 0.62) 48%,
+    rgb(9 21 41 / 1) 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* Hairline rule used to separate stacked sections. */
+@utility rule-t {
+  border-top: 1px solid var(--color-ink-06);
+}
+
+/* ============================================================================
+ *  GOLD-ON-NAVY GUARD
+ *  ---------------------------------------------------------------------------
+ *  --color-gold-ink (#7d6327) exists to make gold LETTERING legible on the
+ *  paper ground. On the navy surfaces the opposite is true: plain #a8873c
+ *  already measures 5.38:1 there, and the darker gold would drop it to 3.20:1.
+ *
+ *  These rules sit OUTSIDE every @layer deliberately. Unlayered declarations
+ *  beat layered ones in the cascade regardless of specificity, so a
+ *  `text-gold-ink` utility pasted into a dark panel by accident still renders
+ *  as the correct gold. It is a guard, not a style — if it ever starts doing
+ *  visible work, the markup is wrong.
+ * ========================================================================== */
+.panel-ink .text-gold-ink,
+.panel-ink .pill,
+.curtain .text-gold-ink,
+.mobile-nav .text-gold-ink,
+.mobile-nav .pill {
+  color: var(--color-gold);
+}
+
+/* ============================================================================
+ *  ACCESSIBILITY
+ * ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

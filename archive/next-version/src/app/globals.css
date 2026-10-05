@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+/* ============================================================================
+ *  DESIGN TOKENS  (Tailwind v4 CSS-first config)
+ *  Anything declared here becomes a utility automatically:
+ *    --color-midnight  →  bg-midnight / text-midnight / border-midnight
+ * ========================================================================== */
+@theme {
+  /* --- Core palette: luxury midnight navy + crisp off-white --- */
+  --color-midnight: #091529;
+  --color-midnight-700: #0d1e38;
+  --color-midnight-600: #122747;
+  --color-bone: #fdfdfd;
+
+  /* Hierarchy is built from OPACITY of the single off-white, never from grey
+   * hex values. This keeps the whole page feeling like one material. */
+  --color-bone-70: rgb(253 253 253 / 0.7);
+  --color-bone-45: rgb(253 253 253 / 0.45);
+  --color-bone-28: rgb(253 253 253 / 0.28);
+  --color-bone-12: rgb(253 253 253 / 0.12);
+  --color-bone-06: rgb(253 253 253 / 0.06);
+
+  /* --- Type stack (wired up by next/font in layout.tsx) --- */
+  --font-sans: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-instrument), ui-serif, Georgia, serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", monospace;
+
+  /* --- Motion --- */
+  --ease-signature: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ============================================================================
+ *  BASE
+ * ========================================================================== */
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--color-midnight);
+    color: var(--color-bone);
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background-color: var(--color-bone);
+    color: var(--color-midnight);
+  }
+
+  /* Hide the native cursor ONLY where we've drawn our own. Coarse-pointer
+   * devices keep their default behaviour (see the media query below). */
+  @media (pointer: fine) {
+    body[data-custom-cursor="on"],
+    body[data-custom-cursor="on"] * {
+      cursor: none !important;
+    }
+  }
+
+  /* Keyboard users must always get a visible focus ring, even though the
+   * mouse cursor is hidden. Non-negotiable. */
+  :focus-visible {
+    outline: 1px solid var(--color-bone);
+    outline-offset: 4px;
+  }
+}
+
+/* ============================================================================
+ *  UTILITIES
+ * ========================================================================== */
+@layer utilities {
+  /* Wraps a headline line so it can slide up from nothing. GSAP's SplitText
+   * `mask: "lines"` generates these automatically, but this is here for any
+   * element you want to mask by hand. */
+  .mask-line {
+    overflow: hidden;
+    display: block;
+  }
+
+  /* Optical letterspacing for the small mono labels. Uppercase mono at small
+   * sizes needs air or it reads as noise. */
+  .label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    line-height: 1;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+
+  /* Premium gradient wash used on the emphasised headline word. Sits on top of
+   * the off-white rather than replacing it, so the text never loses contrast. */
+  .text-sheen {
+    background-image: linear-gradient(
+      100deg,
+      rgb(253 253 253 / 1) 0%,
+      rgb(253 253 253 / 0.62) 48%,
+      rgb(253 253 253 / 1) 100%
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+}
+
+/* ============================================================================
+ *  ACCESSIBILITY
+ *  Users who ask for less motion get a static, fully legible page.
+ *  Hero.tsx ALSO checks this in JS and skips building the timeline entirely.
+ * ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
